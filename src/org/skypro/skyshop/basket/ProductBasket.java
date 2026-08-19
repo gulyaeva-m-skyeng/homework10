@@ -32,25 +32,33 @@ public int getTotalPrice() {
         }
         return sum;
 }
+
+// Считаем только специальные товары
+    private int countSpecialProducts() {
+        int count = 0;
+        for (Product item : items) {
+            if (item != null && item.isSpecial()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public void printBasket() {
         boolean hasItems = false;
-        int specialCount = 0;
 
         for (Product item : items) {
             if (item != null) {
                 hasItems = true;
                 System.out.println(item.toString());
-                if (item.isSpecial()) {
-                specialCount++;
-            }
+
             }
         }
-
         if (!hasItems) {
         System.out.println("В корзине пусто");
     } else {
         System.out.println("Итого: " + getTotalPrice());
-        System.out.println("Специальных товаров: " + specialCount);
+        System.out.println("Специальных товаров: " + countSpecialProducts());
         }
 }
 
