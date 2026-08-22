@@ -4,60 +4,79 @@ import org.skypro.skyshop.product.SimpleProduct;
 import org.skypro.skyshop.product.DiscountedProduct;
 import org.skypro.skyshop.product.FixPriceProduct;
 import org.skypro.skyshop.basket.ProductBasket;
-
-import java.sql.SQLOutput;
+import org.skypro.skyshop.article.Article;
+import org.skypro.skyshop.search.SearchEngine;
+import org.skypro.skyshop.search.Searchable;
 
 public class App {
     public static void main(String[] args) {
-        ProductBasket basket = new ProductBasket();
-        //Обычные товары
-        SimpleProduct milk = new SimpleProduct("Молоко", 120);
-        SimpleProduct eggs = new SimpleProduct("Яйца", 100);
+        //Инициализация движка поиска
+        SearchEngine engine = new SearchEngine(20);
 
-        // Товары со скидкой
-        DiscountedProduct cheese = new DiscountedProduct("Сыр", 300, 15); // 15% скидка
+        // Добавляем товары
+        engine.add(new SimpleProduct("Помада", 1000));
+        engine.add(new SimpleProduct("Тушь", 800));
+        engine.add(new SimpleProduct("Карандаш", 200));
+        engine.add(new DiscountedProduct("Румяна", 750, 15));
+        engine.add(new DiscountedProduct("Пудра", 500, 10));
+        engine.add(new FixPriceProduct("Подводка"));
+        engine.add(new FixPriceProduct("Хайлайтер"));
 
-        // Товары с фиксированной ценой
-        FixPriceProduct coconuts = new FixPriceProduct("Кокосы");
-        FixPriceProduct pineapples = new FixPriceProduct("Ананасы");
+        // Добавляем статьи
+        engine.add(new Article("Как выбрать помаду c ароматом ванили", "В этой статье мы расскажем какие ароматные помады бывают..."));
+        engine.add(new Article("Обзор видов туши", "Модельные показ туши разных цветов..."));
+        engine.add(new Article("Эффект румян", "Как румяна переливаются на солнце..."));
+        engine.add(new Article("Выразительность глаз", "Благодаря подводки взгляд становится выразительным"));
 
-        // Добавление товар в корзину
-        basket.addProduct(milk);
-        basket.addProduct(eggs);
-        basket.addProduct(cheese);
-        basket.addProduct(coconuts);
-        basket.addProduct(pineapples);
+        System.out.println("===Тестирование поиска===\n");
 
-        // Попытка добавить 6 товар
-        System.out.println("... Попытка добавить 6-й товар ... ");
-        SimpleProduct extra = new SimpleProduct("Лишний товар", 77);
-        basket.addProduct(extra);
+        // Тест 1. Запрос, совпадающий с товаром и статьей ("тушь")
+        runTest(engine, "тушь");
 
-        // Печать содержимое корзины (с новым форматом)
-        System.out.println("...Содержимое корзины...");
-        basket.printBasket();
+        // Тест 2. Запрос, совпадающий только со статьей ("эффект")
+        runTest(engine,"эффект");
 
-        // Получение стоимости корзины
-        System.out.println("Общая стоимость корзины: " + basket.getTotalPrice());
+        // Тест 3. Частичное совпадение ("хайлай")
+        runTest(engine, "хайлай");
 
-        //Поиск товара, который есть в корзине
-        System.out.println("Есть ли в корзине «Сыр»? " + basket.containsByName("Сыр"));
+        // Тест 4. Несуществующий запрос
+        runTest(engine, "блестки");
 
-        //Поиск товара, которого нет в корзине
-        System.out.println("Есть ли в корзине «Шоколад»? " + basket.containsByName("Шоколад"));
+        // Тест 5. Проверка лимита в 5 результатов
+        //Добавляем много товаров с похожим названием, чтобы превысить лимит
 
-        //Очистка корзины
-        System.out.println("...Очистка корзины...");
-        basket.clearBasket();
+        engine.add(new SimpleProduct("Помада розовая", 756));
+        engine.add(new SimpleProduct("Помада красная", 720));
+        engine.add(new SimpleProduct("Помада фиолетовая", 650));
+        engine.add(new SimpleProduct("Помада бордовая", 680));
+        engine.add(new SimpleProduct("Помада малиновая", 850));
 
-        // Печать пустой корзины
-        System.out.println("...Содержимое пустой корзины ...");
-        basket.printBasket();
+        System.out.println("Тест 5: Поиск 'помада' (ожидает не более 5 результатов:");
+        printResults(engine.search("помада"));
+    }
 
-        // Стоимость пустой корзины
-        System.out.println("Стоимость пустой карзины: " + basket.getTotalPrice());
+    private static void runTest(SearchEngine engine, String query) {
+    System.out.println("Поиск по запросу: \"" + query + "\"");
+    Searchable[] results = engine.search(query);
+    printResults(results);
+    System.out.println("-----------\n");
+    }
 
-        // Поиск в пустой корзине
-        System.out.println("Есть ли в пустой корзине «Молоко»? " + basket.containsByName("Молоко"));
+    private static void printResults(Searchable[] results) {
+        boolean foudAny = false;
+        for (Searchable item : results) {
+            if (item != null) {
+                foudAny = true;
+                System.out.println("> " + item.getStringRepresentation());
+
+                // Выводим полный текст статьи, если это статья
+                if (item instanceof Article) {
+                    System.out.println("  Детали: " + item.toString());
+                }
+            }
+        }
+        if (!foudAny) {
+            System.out.println("Ничего не найдено.");
+        }
     }
 }
