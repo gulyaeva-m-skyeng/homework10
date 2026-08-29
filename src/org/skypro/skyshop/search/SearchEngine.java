@@ -26,9 +26,9 @@ public SearchEngine (int capacity) {
 
     for (int i=0; i < currentSize; i++) {
         Searchable item = items[i];
-        String searchTerm = item.getSearchTerm().toLowerCase();
+        String term = item.getSearchTerm().toLowerCase();
 
-        if (searchTerm.contains(lowerQuery)) {
+        if (term.contains(lowerQuery)) {
             results[count] = item;
             count++;
 
@@ -39,5 +39,45 @@ public SearchEngine (int capacity) {
         }
     }
     return results;
+    }
+
+    // Метод поиска: найти "лучший" результат (максимальное число вхождений подстроки)
+    public Searchable findBestMatch(String query) throws BestResultNotFound {
+    if (query == null || query.isBlank()) {
+        throw new BestResultNotFound(query);
+    }
+    String lowerQuery = query.toLowerCase();
+    Searchable bestItem = null;
+    int maxCount = -1;
+
+    for (int i = 0; i < currentSize; i++) {
+        Searchable item = items[i];
+        String term = item.getSearchTerm().toLowerCase();
+        int count = countOccurrences(term, lowerQuery);
+
+        if (count > maxCount && count > 0) {
+            maxCount = count;
+            bestItem = item;
+        }
+    }
+
+    if (bestItem == null) {
+        throw new BestResultNotFound(query);
+    }
+    return  bestItem;
+    }
+
+    // Вспомогательный метод: подсчет непересекающихся вхождений подстроки
+    private static int countOccurrences(String text, String sub) {
+    if (sub.isEmpty()) {
+        return 0;
+    }
+    int count = 0;
+    int index = 0;
+    while ((index = text.indexOf(sub, index)) != -1) {
+        count++;
+        index += sub.length();
+    }
+    return count;
     }
 }

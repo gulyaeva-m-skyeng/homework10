@@ -9,3 +9,4 @@ public interface Searchable {
         return getName() + " — " + getContentType();
     }
 }
+
