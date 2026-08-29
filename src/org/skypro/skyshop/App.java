@@ -2,62 +2,85 @@ package org.skypro.skyshop;
 
 import org.skypro.skyshop.product.SimpleProduct;
 import org.skypro.skyshop.product.DiscountedProduct;
-import org.skypro.skyshop.product.FixPriceProduct;
-import org.skypro.skyshop.basket.ProductBasket;
-
-import java.sql.SQLOutput;
+import org.skypro.skyshop.article.Article;
+import org.skypro.skyshop.search.SearchEngine;
+import org.skypro.skyshop.search.Searchable;
+import org.skypro.skyshop.search.BestResultNotFound;
 
 public class App {
     public static void main(String[] args) {
-        ProductBasket basket = new ProductBasket();
-        //Обычные товары
-        SimpleProduct milk = new SimpleProduct("Молоко", 120);
-        SimpleProduct eggs = new SimpleProduct("Яйца", 100);
+        SearchEngine engine = new SearchEngine(20);
 
-        // Товары со скидкой
-        DiscountedProduct cheese = new DiscountedProduct("Сыр", 300, 15); // 15% скидка
+        // 1. Объекты
+        engine.add(new SimpleProduct("Помада", 1000));
+        engine.add(new SimpleProduct("Тушь", 800));
+        engine.add(new DiscountedProduct("Румяна", 750, 15));
+        engine.add(new Article("Как выбрать помаду c ароматом ванили", "В этой статье мы расскажем какие ароматные помады бывают..."));
+        engine.add(new Article("Обзор видов туши", "Модельные показ туши разных цветов..."));
 
-        // Товары с фиксированной ценой
-        FixPriceProduct coconuts = new FixPriceProduct("Кокосы");
-        FixPriceProduct pineapples = new FixPriceProduct("Ананасы");
+        System.out.println("===Проверка валидации (некорректные данные) ===\n");
 
-        // Добавление товар в корзину
-        basket.addProduct(milk);
-        basket.addProduct(eggs);
-        basket.addProduct(cheese);
-        basket.addProduct(coconuts);
-        basket.addProduct(pineapples);
+        // 2. Демонстрация IllegalArgumentException
+        try {
+            new SimpleProduct("", 100); // пустое название
+        } catch (IllegalArgumentException e) {
+            System.out.println("Поймано исключение (пустое название): " + e.getMessage());
+        }
 
-        // Попытка добавить 6 товар
-        System.out.println("... Попытка добавить 6-й товар ... ");
-        SimpleProduct extra = new SimpleProduct("Лишний товар", 77);
-        basket.addProduct(extra);
+        try {
+            new SimpleProduct("  ", 100); // только пробелы
+        } catch (IllegalArgumentException e) {
+            System.out.println("Поймано исключение (название из пробелов): " + e.getMessage());
+        }
 
-        // Печать содержимое корзины (с новым форматом)
-        System.out.println("...Содержимое корзины...");
-        basket.printBasket();
+        try {
+            new SimpleProduct("Товар", 0); // цена 0
+        } catch (IllegalArgumentException e) {
+            System.out.println("Поймано исключение (цена <= 0): " + e.getMessage());
+        }
 
-        // Получение стоимости корзины
-        System.out.println("Общая стоимость корзины: " + basket.getTotalPrice());
+        try {
+            new DiscountedProduct("Скидка", 100, -7); // скидка < 0
+        } catch (IllegalArgumentException e) {
+            System.out.println("Поймано исключение (скидка < 0) " + e.getMessage());
+        }
+         try {
+             new DiscountedProduct("Скидка", 100, 109); // скидка > 100
+         } catch (IllegalArgumentException e) {
+             System.out.println("Поймано исключение (скидка > 100): " + e.getMessage());
+         }
+         System.out.println();
 
-        //Поиск товара, который есть в корзине
-        System.out.println("Есть ли в корзине «Сыр»? " + basket.containsByName("Сыр"));
+         // 3. Демонстрация findBestMatch: есть совпадение
+        System.out.println("=== Поиск лучшего совпадения (есть результат) ===");
+         try {
+             Searchable best = engine.findBestMatch("Туши");
+             System.out.println("Лучший результат: " + best.getStringRepresentation());
+             if (best instanceof Article) {
+                 System.out.println("Детали: " + best.toString());
+             }
+         } catch (BestResultNotFound e) {
+             System.out.println(e.getMessage());
+         }
+         System.out.println();
 
-        //Поиск товара, которого нет в корзине
-        System.out.println("Есть ли в корзине «Шоколад»? " + basket.containsByName("Шоколад"));
+         // 4. Демонстрация findBestMatch: нет совпадений
+        System.out.println("===Поиск лучшего совпадения (нет результата) ===");
+        try {
+            Searchable best = engine.findBestMatch("несуществующий товар");
+            System.out.println("Лучший результат: " + best.getStringRepresentation());
+        } catch (BestResultNotFound e) {
+            System.out.println(e.getMessage());
+        }
+        System.out.println();
 
-        //Очистка корзины
-        System.out.println("...Очистка корзины...");
-        basket.clearBasket();
-
-        // Печать пустой корзины
-        System.out.println("...Содержимое пустой корзины ...");
-        basket.printBasket();
-
-        // Стоимость пустой корзины
-        System.out.println("Стоимость пустой карзины: " + basket.getTotalPrice());
-
-        // Поиск в пустой корзине
-        System.out.println("Есть ли в пустой корзине «Молоко»? " + basket.containsByName("Молоко"));
+        // 5. Дополнительно: старый поиск (до 5 результатов)
+        System.out.println("===Старый поиск (до 5 результатов) ===");
+        Searchable[] results = engine.search("Помада");
+        for (Searchable r : results) {
+            if (r != null) {
+                System.out.println("> " + r.getStringRepresentation());
+            }
+        }
     }
 }
