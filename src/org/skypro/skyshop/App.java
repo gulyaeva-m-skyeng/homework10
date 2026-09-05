@@ -3,61 +3,113 @@ package org.skypro.skyshop;
 import org.skypro.skyshop.product.SimpleProduct;
 import org.skypro.skyshop.product.DiscountedProduct;
 import org.skypro.skyshop.product.FixPriceProduct;
+import org.skypro.skyshop.article.Article;
 import org.skypro.skyshop.basket.ProductBasket;
+import org.skypro.skyshop.search.SearchEngine;
+import org.skypro.skyshop.search.Searchable;
+import org.skypro.skyshop.search.BestResultNotFound;
 
-import java.sql.SQLOutput;
+import java.util.List;
 
 public class App {
     public static void main(String[] args) {
+        // Демонстрация ProductBasket (список + удаление)
+        System.out.println("=== Работа с корзиной ===\n");
+
         ProductBasket basket = new ProductBasket();
-        //Обычные товары
-        SimpleProduct milk = new SimpleProduct("Молоко", 120);
-        SimpleProduct eggs = new SimpleProduct("Яйца", 100);
+        basket.addProduct(new SimpleProduct("Помада", 1000));
+        basket.addProduct(new SimpleProduct("Тушь", 800));
+        basket.addProduct(new DiscountedProduct("Румяна", 750, 15));
+        basket.addProduct(new FixPriceProduct("Подводка"));
+        basket.addProduct(new SimpleProduct("Карандаш", 200));
 
-        // Товары со скидкой
-        DiscountedProduct cheese = new DiscountedProduct("Сыр", 300, 15); // 15% скидка
-
-        // Товары с фиксированной ценой
-        FixPriceProduct coconuts = new FixPriceProduct("Кокосы");
-        FixPriceProduct pineapples = new FixPriceProduct("Ананасы");
-
-        // Добавление товар в корзину
-        basket.addProduct(milk);
-        basket.addProduct(eggs);
-        basket.addProduct(cheese);
-        basket.addProduct(coconuts);
-        basket.addProduct(pineapples);
-
-        // Попытка добавить 6 товар
-        System.out.println("... Попытка добавить 6-й товар ... ");
-        SimpleProduct extra = new SimpleProduct("Лишний товар", 77);
-        basket.addProduct(extra);
-
-        // Печать содержимое корзины (с новым форматом)
-        System.out.println("...Содержимое корзины...");
+        System.out.println("===Корзина до удаления ===");
         basket.printBasket();
+        System.out.println();
 
-        // Получение стоимости корзины
-        System.out.println("Общая стоимость корзины: " + basket.getTotalPrice());
+        // Удаляем существующий продукт
+    System.out.println("=== Удаление продукта \"Помада\" ===");
+            List<org.skypro.skyshop.product.Product> removed = basket.removeProduct("Помада");
 
-        //Поиск товара, который есть в корзине
-        System.out.println("Есть ли в корзине «Сыр»? " + basket.containsByName("Сыр"));
+    System.out.println("Удалённые продукты:");
+    for (org.skypro.skyshop.product.Product p : removed) {
+    System.out.println(" " + p);
+    }
 
-        //Поиск товара, которого нет в корзине
-        System.out.println("Есть ли в корзине «Шоколад»? " + basket.containsByName("Шоколад"));
+    System.out.println("\nКорзина после удаления:");
+    basket.printBasket();
+    System.out.println();
 
-        //Очистка корзины
-        System.out.println("...Очистка корзины...");
-        basket.clearBasket();
+    // Удаляемый несуществующий продукт
+        System.out.println("=== Удаление несуществующего продукта \"Хайлайтер\" ===");
+        List<org.skypro.skyshop.product.Product> removedEmpty = basket.removeProduct("Хайлайтер");
 
-        // Печать пустой корзины
-        System.out.println("...Содержимое пустой корзины ...");
+        if (removedEmpty.isEmpty()) {
+            System.out.println("Список пуст");
+        }
+
+        System.out.println("\nКорзина после попытки удаления:");
         basket.printBasket();
+        System.out.println();
 
-        // Стоимость пустой корзины
-        System.out.println("Стоимость пустой карзины: " + basket.getTotalPrice());
+        // Демонстрация SearchEngine (список + все результаты)
+        System.out.println("=== Работа с поиском ===\n");
 
-        // Поиск в пустой корзине
-        System.out.println("Есть ли в пустой корзине «Молоко»? " + basket.containsByName("Молоко"));
+        SearchEngine engine = new SearchEngine();
+        engine.add(new SimpleProduct("Помада", 1000));
+        engine.add(new SimpleProduct("Тушь", 800));
+        engine.add(new SimpleProduct("Карандаш", 200));
+        engine.add(new DiscountedProduct("Румяна", 750, 15));
+        engine.add(new FixPriceProduct("Подводка"));
+        engine.add(new Article("Как выбрать помаду с ароматом ванили", "В этой статье мы расскажем какие помады бывают."));
+        engine.add(new Article("Обзор карандашей для глаз", "Модельный показ карандашей разных цветов."));
+
+        // Поиск по продукту "помада" - вернет все результаты
+        System.out.println("=== Поиск по запросу \"помада\" ===");
+        List<Searchable> results = engine.search("помада");
+        for (Searchable item : results) {
+            System.out.println("> " + item.getStringRepresentation());
+        }
+
+        System.out.println("\nВсего найдено: " + results.size());
+        System.out.println();
+
+        // Поиск по продукту "карандаш"
+        System.out.println("=== Поиск по запросу \"карандаш\" === ");
+        List<Searchable> results2 = engine.search("карандаш");
+        for (Searchable item : results2) {
+            System.out.println("> " + item.getStringRepresentation());
+        }
+
+        System.out.println("\nВсего найдено: " + results2.size());
+        System.out.println();
+
+        // Поиск несуществующего товара
+        System.out.println("=== Поиск по запросу \"блестки\" ===");
+        List<Searchable> results3 = engine.search("блестки");
+        if (results3.isEmpty()) {
+            System.out.println("Ничего не найдено.");
+        }
+         System.out.println();
+
+        // Поиск лучшего совпадения
+        System.out.println(" === Поиск лучшего совпадения по \"помада\" ===");
+        try {
+            Searchable best = engine.findBestMatch("помада");
+            System.out.println("Лучший результат: " + best.getStringRepresentation());
+        } catch (BestResultNotFound e) {
+            System.out.println(e.getMessage());
+        }
+
+        System.out.println();
+
+        // Поиск лучшего совпадения - нет результата
+        System.out.println("=== Поиск лучшего совпадения по \"блестки\" ===");
+        try {
+            Searchable best = engine.findBestMatch("блестки");
+            System.out.println("Лучший результат: " + best.getStringRepresentation());
+        } catch (BestResultNotFound e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
