@@ -2,7 +2,7 @@ package org.skypro.skyshop.product;
 
 import org.skypro.skyshop.search.Searchable;
 
-public class FixPriceProduct extends Product implements Searchable {
+public class FixPriceProduct extends Product {
         private final int price;
 
         public FixPriceProduct(String name, int price) {

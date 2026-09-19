@@ -11,7 +11,7 @@ import org.skypro.skyshop.exception.BestResultNotFound;
 import org.skypro.skyshop.product.Product;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 public class App {
     public static void main(String[] args) {
@@ -73,7 +73,6 @@ public class App {
         System.out.println("\n=== Удаление продукта по названию ===");
 
         List<Product> removed = basket.removeProductByName("Тушь");
-
         System.out.println("Удалённые продукты:");
         for (Product p : removed) {
             System.out.println(" " + p.getName() + ": " + p.getPrice());
@@ -104,19 +103,23 @@ public class App {
         engine.add(article1);
         engine.add(article2);
 
-        // Поиск результатов - TreeMap, отсортированный по названию
+        // Демонстрация дубликатов: mascara2 имеет такое же наименование как и mascara
+        engine.add(mascara2);
+        System.out.println("Попытка добавить дубликат (Тушь mascara) - не должна добавиться");
+
+        // Поиск результатов - TreeSet
         System.out.println("\n Результаты поиска \"Карандаш\" :");
-        Map<String, Searchable> results = engine.search("Карандаш");
-        for (Searchable s : results.values()) {
+        Set<Searchable> results = engine.search("Карандаш");
+        for (Searchable s : results) {
             System.out.println(" " + s.getStringRepresentation());
         }
 
         System.out.println("\nРезультаты поиска \"Несуществующего товара\" :");
-        Map<String, Searchable> emptyResults = engine.search("Несуществующий товар");
+        Set<Searchable> emptyResults = engine.search("Несуществующий товар");
         if (emptyResults.isEmpty()) {
             System.out.println(" Ничего не найдено");
         } else {
-            for (Searchable s : emptyResults.values()) {
+            for (Searchable s : emptyResults) {
                 System.out.println(" " + s.getStringRepresentation());
             }
         }
