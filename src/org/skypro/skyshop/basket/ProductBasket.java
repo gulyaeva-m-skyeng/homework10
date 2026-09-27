@@ -1,8 +1,12 @@
 package org.skypro.skyshop.basket;
 
+import org.skypro.skyshop.product.DiscountedProduct;
+import org.skypro.skyshop.product.FixPriceProduct;
 import org.skypro.skyshop.product.Product;
 
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,13 +19,10 @@ public class ProductBasket {
     }
 
     public int getTotalPrice() {
-        int total = 0;
-        for (List<Product> list : products.values()) {
-            for (Product p : list) {
-                total += p.getPrice();
-            }
-        }
-        return total;
+        return products.values().stream()
+                .flatMap(Collection::stream)
+                .mapToInt(Product::getPrice)
+                .sum();
     }
 
     public void printContents() {
@@ -29,13 +30,24 @@ public class ProductBasket {
             System.out.println("в корзине пусто");
             return;
         }
-        for (List<Product> list : products.values()) {
-            for (Product p : list) {
-                System.out.println(p.getName() + ": " + p.getPrice());
-            }
-        }
+
+        products.values().stream()
+                .flatMap(Collection::stream)
+                .forEach(p -> System.out.println(p.getName() + ": " + p.getPrice()));
+
+        long specialCount = getSpecialCount();
+
         System.out.println("Итого: " + getTotalPrice());
+        System.out.println("Специальных товаров: " + specialCount);
     }
+
+    private long getSpecialCount() {
+    return products.values().stream()
+            .flatMap(Collection::stream)
+            .filter(p -> p instanceof DiscountedProduct || p instanceof FixPriceProduct)
+            .count();
+    }
+
     public boolean containsProduct(String name) {
         return products.containsKey(name);
     }

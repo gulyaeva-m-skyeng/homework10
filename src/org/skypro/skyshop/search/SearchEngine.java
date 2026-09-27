@@ -2,16 +2,25 @@ package org.skypro.skyshop.search;
 
 import org.skypro.skyshop.exception.BestResultNotFound;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SearchEngine {
     private final Set<Searchable> searchables = new HashSet<>();
 
-    public void add(Searchable searchable) {
-        searchables.add(searchable);
+    public boolean add(Searchable searchable) {
+        return searchables.add(searchable);
+    }
+
+    public Set<Searchable> search(String search) {
+        if (search == null || search.isBlank()) {
+            return new TreeSet<>(new SearchableComparator());
+        }
+        String lowerSearch = search.toLowerCase();
+
+        return searchables.stream()
+                .filter(s -> s.getSearchTerm().toLowerCase().contains(lowerSearch))
+                .collect(Collectors.toCollection(() -> new TreeSet<>(new SearchableComparator())));
     }
 
     public Searchable findBestMatch(String search) throws BestResultNotFound {
@@ -37,19 +46,6 @@ public class SearchEngine {
         return best;
     }
 
-    public Set<Searchable> search(String search) {
-        Set<Searchable> results = new TreeSet<>(new SearchableComparator());
-        if (search == null || search.isBlank()) {
-            return results;
-        }
-        for (Searchable s : searchables) {
-            if (s.getSearchTerm().toLowerCase().contains(search.toLowerCase())) {
-                results.add(s);
-            }
-        }
-        return results;
-    }
-
     private int countOccurrences(String term, String search) {
         if (term == null || term.isEmpty()) {
             return 0;
@@ -70,7 +66,7 @@ public class SearchEngine {
                     s2.getName().length(),
                     s1.getName().length()
             );
-            if (lenCompare !=0) {
+            if (lenCompare != 0) {
                 return lenCompare;
             }
             return s1.getName().compareTo(s2.getName());
