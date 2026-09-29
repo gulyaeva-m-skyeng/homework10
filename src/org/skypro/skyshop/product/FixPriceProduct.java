@@ -5,8 +5,8 @@ public class FixPriceProduct extends Product {
 
     public FixPriceProduct(String name, int price) {
         super(name);
-        if (price < 0) {
-            throw new IllegalArgumentException("Цена не может быть отрицательной");
+        if (price <= 0) {
+            throw new IllegalArgumentException("Цена не может быть нулевой или отрицательной");
         }
         this.price = price;
     }
@@ -14,5 +14,14 @@ public class FixPriceProduct extends Product {
     @Override
     public int getPrice() {
         return price;
+    }
+    @Override
+    public String toString() {
+        return getName() + ": " + price + " руб. — FIX_PRICE";
+    }
+
+    @Override
+    public String getStringRepresentation() {
+        return toString();
     }
 }

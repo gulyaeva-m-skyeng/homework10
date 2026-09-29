@@ -30,7 +30,7 @@ public class ProductBasket {
 
         products.values().stream()
                 .flatMap(Collection::stream)
-                .forEach(p -> System.out.println(p.getStringRepresentation()));
+                .forEach(System.out::println);
 
         System.out.println("Итого: " + getTotalPrice());
         System.out.println("Специальных товаров: " + getSpecialCount());
