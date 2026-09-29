@@ -1,22 +1,27 @@
 package org.skypro.skyshop.product;
 
 public class FixPriceProduct extends Product {
-        private static final int FIXED_PRICE = 169; // SCREAMING_SNAKE_CASE
-        public FixPriceProduct(String name) {
-            super(name);
-        }
-        @Override
-        public int getPrice() {
-        return FIXED_PRICE;
-        }
+    private final int price;
 
-        @Override
-        public boolean isSpecial() {
-            return true;
+    public FixPriceProduct(String name, int price) {
+        super(name);
+        if (price <= 0) {
+            throw new IllegalArgumentException("Цена не может быть нулевой или отрицательной");
         }
-
-        @Override
-        public String toString() {
-            return getName() + ": Фиксированная цена " + FIXED_PRICE;
-        }
+        this.price = price;
     }
+
+    @Override
+    public int getPrice() {
+        return price;
+    }
+    @Override
+    public String toString() {
+        return getName() + ": " + price + " руб. — FIX_PRICE";
+    }
+
+    @Override
+    public String getStringRepresentation() {
+        return toString();
+    }
+}
