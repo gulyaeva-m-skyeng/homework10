@@ -1,7 +1,5 @@
 package org.skypro.skyshop.product;
 
-import org.skypro.skyshop.search.Searchable;
-
 public class SimpleProduct extends Product {
     private final int price;
 
@@ -19,12 +17,7 @@ public class SimpleProduct extends Product {
     }
 
     @Override
-    public String getContentType() {
-        return "PRODUCT";
-    }
-
-    @Override
-    public String getSearchTerm() {
-        return getName();
+    public String toString() {
+        return getName() + ": " + price + " руб.";
     }
 }

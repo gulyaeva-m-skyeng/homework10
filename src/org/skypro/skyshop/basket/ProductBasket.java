@@ -1,9 +1,6 @@
 package org.skypro.skyshop.basket;
 
-import org.skypro.skyshop.product.DiscountedProduct;
-import org.skypro.skyshop.product.FixPriceProduct;
 import org.skypro.skyshop.product.Product;
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,18 +30,16 @@ public class ProductBasket {
 
         products.values().stream()
                 .flatMap(Collection::stream)
-                .forEach(p -> System.out.println(p.getName() + ": " + p.getPrice()));
-
-        long specialCount = getSpecialCount();
+                .forEach(p -> System.out.println(p.getStringRepresentation()));
 
         System.out.println("Итого: " + getTotalPrice());
-        System.out.println("Специальных товаров: " + specialCount);
+        System.out.println("Специальных товаров: " + getSpecialCount());
     }
 
     private long getSpecialCount() {
-    return products.values().stream()
+        return products.values().stream()
             .flatMap(Collection::stream)
-            .filter(p -> p instanceof DiscountedProduct || p instanceof FixPriceProduct)
+            .filter(Product::isSpecial)
             .count();
     }
 
